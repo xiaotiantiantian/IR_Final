@@ -3,6 +3,11 @@ import re
 from bs4 import BeautifulSoup
 from wheel.util import utf8
 from crawler import response
+
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
  
 response = urllib2.urlopen("http://www.flyertalk.com/forum/credit-card-programs-599")
 
@@ -117,36 +122,43 @@ for element1 in AddrList:
 myfile = open('docset.trecweb', 'w')   # The file is newly created where foo.py is    
 
 for element1 in AddrList:
-    
-    #print element1
     element1+='.html'
     print element1
     response = urllib2.urlopen(element1)
-    
-    
 
-
-    #html2=response.read()
-
-    #soupOfContent=BeautifulSoup(html2,"lxml")
-    
-    
-    
     rawContent = "<DOC>\n"
     rawContent += "<DOCNO>" + element1 + "</DOCNO>\n"
     
     
     #use beautiful soup to get content of html page
-    soup=BeautifulSoup(response,"lxml")
-    messageOfPost = soup.find_all("div")
-    
-#     for links in soup.find_all('a'):
-#     link=links.get('href')
-    for messageSingle in messageOfPost:
-        print messageSingle
-        
-        
-    rawContent += soup.get_text();
+#     soup=BeautifulSoup(response,"lxml")
+#     messageOfPost = soup.find_all("div")
+#     
+# #     for links in soup.find_all('a'):
+# #     link=links.get('href')
+#     for messageSingle in messageOfPost:
+#         print messageSingle
+#         
+#         
+
+    soup = BeautifulSoup(response, 'html.parser')
+    texts = soup.findAll(text=True)
+    def visible(element):
+        if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+            return False
+        elif re.match('<!--.*-->', str(element)):
+            return False
+        return True
+
+    visible_texts = filter(visible, texts)
+
+    print visible_texts
+    for SingleContent in visible_texts:
+        rawContent += SingleContent
+        #print rawContent
+# 
+#     rawContent += visible_texts
+    #rawContent += soup.get_text();
     #rawContent += response.read()
     
     rawContent += "\n </DOC>\n\n"
